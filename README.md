@@ -1,2 +1,2 @@
-# workly
-This is test repository
+# Examples
+Through Learning
