@@ -58,8 +58,8 @@ func main() {
 				} else {
 					fmt.Fprintf(w, `{"error": 2, "error_text": "fields must be 4, sperarated with \t"}`)
 				}
-				fmt.Fprintf(w, `{"success": 1, "success_text": "Registered"}`)
 			}
+			fmt.Fprintf(w, `{"success": 1, "success_text": "Registered"}`)
 			
 		}
 
