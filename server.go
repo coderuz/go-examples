@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
+	"strings"
 	// load postgres driver
 	_ "github.com/lib/pq"
 )
@@ -37,6 +37,33 @@ func main() {
 		}
 
 		fmt.Fprintf(w, `{"error": 1, "error_text": "Bad Request","docs": "Do 'POST /event' with {EMP_ID, EVENT_CODE, DT, DEVICE_SN} data"}`)
+	})
+
+	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+		// Write Header
+		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method == "POST" {
+			rows := strings.Split(r.FormValue("rows"), '\n')
+
+			for _, row := range rows {
+				args := strings.Split(row, '\t')
+				if len(args)==4{
+					emp_id, event_code, dt, device_sn := args[0], args[1], args[2], args[3]
+					_, dberr := db.Query("INSERT INTO inouts (EMP_ID, EVENT_CODE, DT, DEVICE_SN) VALUES ($1, $2, $3, $4)", emp_id, event_code, dt, device_sn)
+					if dberr != nil {
+						log.Fatal(dberr)
+						println("Error")
+					}
+				} else {
+					fmt.Fprintf(w, `{"error": 2, "error_text": "fields must be 4, sperarated with \t"}`)
+				}
+				fmt.Fprintf(w, `{"success": 1, "success_text": "Registered"}`)
+			}
+			
+		}
+
+		fmt.Fprintf(w, `{"error": 1, "error_text": "Bad Request","docs": "Do 'POST /events' with rows = {EMP_ID, EVENT_CODE, DT, DEVICE_SN} data, each separated with \t and all rows are separated with \n"}`)
 	})
 
 	http.ListenAndServe(":8080", nil)
